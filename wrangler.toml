@@ -1,0 +1,29 @@
+# wrangler.toml for VM restart system
+# This file configures two workers in the same project
+
+# Webhook Handler Worker Configuration
+[env.queue]
+name = "webhook-handler"
+main = "webhook-handler/webhook-handler.ts" 
+compatibility_date = "2023-01-01"
+
+# Queue binding for webhook handler
+[[env.queue.queues.producers]]
+binding = "QUEUE_NAME"
+queue = "azure-vm-evictions"
+
+# Azure VM Starter Worker Configuration
+[env.processor]
+name = "azure-vm-starter"
+main = "azure-vm-starter/azure-vm-starter.ts"
+compatibility_date = "2023-01-01"
+
+# Queue binding for azure-vm-starter as a consumer
+[[env.processor.queues.consumers]]
+queue = "azure-vm-evictions"
+max_batch_size = 10
+max_batch_timeout = 5
+
+# Schedule for the azure-vm-starter (may be optional with queue consumers)
+[env.processor.triggers]
+crons = ["*/1 * * * *"]
