@@ -1,4 +1,6 @@
+// webhook-handler.ts
 // Receives webhook POST requests and sends VM info to queue
+// Includes API key authentication for security
 
 // Types
 interface VMRecord {
@@ -21,6 +23,7 @@ interface WebhookResponse {
 
 interface CloudflareEnvironment {
   QUEUE_NAME: Queue<VMRecord>;
+  WEBHOOK_API_KEY: string;  // Secret for authenticating webhook requests
   ENVIRONMENT?: string;
   LOG_LEVEL?: string;
 }
@@ -41,6 +44,19 @@ export default {
       return new Response('Method not allowed. Only POST requests are accepted.', { status: 405 });
     }
 
+    // Validate API key authentication
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.warn('Missing or invalid Authorization header');
+      return new Response('Unauthorized: Missing API key', { status: 401 });
+    }
+
+    const providedApiKey = authHeader.substring(7); // Remove "Bearer " prefix
+    if (providedApiKey !== env.WEBHOOK_API_KEY) {
+      console.warn('Invalid API key provided');
+      return new Response('Unauthorized: Invalid API key', { status: 401 });
+    }
+
     try {
       // Parse the webhook payload
       const payload: WebhookPayload = await request.json();
@@ -50,6 +66,16 @@ export default {
       
       if (!resourceGroup || !vmName) {
         return new Response('Missing required fields: resourceGroup and vmName', { status: 400 });
+      }
+
+      // Basic input validation
+      if (typeof resourceGroup !== 'string' || typeof vmName !== 'string') {
+        return new Response('Invalid field types: resourceGroup and vmName must be strings', { status: 400 });
+      }
+
+      // Sanitize input - only allow alphanumeric, hyphens, and underscores
+      if (!/^[a-zA-Z0-9_-]+$/.test(resourceGroup) || !/^[a-zA-Z0-9_-]+$/.test(vmName)) {
+        return new Response('Invalid characters in resourceGroup or vmName', { status: 400 });
       }
 
       // Create a VM record
