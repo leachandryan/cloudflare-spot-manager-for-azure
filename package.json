@@ -1,26 +1,41 @@
 {
-  "name": "cloudflare-spot-manager-for-azure",
+  "name": "azure-spot-vm-manager",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "High-performance TypeScript-based monitoring solution for Azure Spot VM eviction detection and automated recovery",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "dev:webhook": "wrangler dev --env dev-webhook",
+    "dev:processor": "wrangler dev --env dev-processor",
+    "deploy:dev": "npm run build && wrangler deploy --env dev-webhook && wrangler deploy --env dev-processor",
+    "deploy:staging": "npm run build && wrangler deploy --env staging-webhook && wrangler deploy --env staging-processor",
+    "deploy:prod": "npm run build && wrangler deploy --env webhook && wrangler deploy --env processor",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint **/*.ts",
+    "lint:fix": "eslint **/*.ts --fix",
+    "format": "prettier --write **/*.{ts,js,json,md}",
+    "format:check": "prettier --check **/*.{ts,js,json,md}"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "Ryan Leach <ryanleach@employthisguy.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250719.0",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^24.0.15",
-    "@typescript-eslint/eslint-plugin": "^8.37.0",
-    "@typescript-eslint/parser": "^8.37.0",
-    "eslint": "^9.31.0",
-    "eslint-config-prettier": "^10.1.8",
-    "jest": "^30.0.4",
-    "prettier": "^3.6.2",
-    "ts-jest": "^29.4.0",
-    "typescript": "^5.8.3",
-    "wrangler": "^4.25.0"
+    "@cloudflare/workers-types": "^4.20241011.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.7.4",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "eslint": "^9.11.1",
+    "eslint-config-prettier": "^9.1.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.3.3",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.2",
+    "wrangler": "^3.78.0"
   }
 }
